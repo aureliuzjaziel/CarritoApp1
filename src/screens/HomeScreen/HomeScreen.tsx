@@ -16,6 +16,7 @@ export interface Product{
     price: number;
     stock: number;
     pathImage: string;
+    
 }
 //interface para el objeto carrito
 export interface Car {
@@ -43,11 +44,15 @@ export const HomeScreen = () => {
     
 
   ];
+  
+  
   //hook useState para gestionar el estado de los productos
   const [productsState, setProductsState] = useState<Product[]>(products);
 
   //hook useState para gestionar el carrito de compras
   const [car, setCar] = useState<Car[]>([]);
+  
+  
 
   //hook useState para gestionar el estado del modal
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -63,24 +68,37 @@ export const HomeScreen = () => {
       addProductCar(idProduct, quantity);
   }
 
-  //función para agregar un producto al carrito
   const addProductCar = (idProduct: number, quantity: number) => {
-      const product = productsState.find(product => product.id === idProduct);
-      //Controlar si no existe el producto
-      if (!product) return;
-      //Crear el objeto producto para agregar al carrito
-      const newProductCar: Car = {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          quantity: quantity,
-          total: product.price * quantity
-      }
-      //Agregar arreglo Car
-      setCar([...car, newProductCar]);
-      //console.log(car);
-  }
-
+    const product = productsState.find(product => product.id === idProduct);
+    // Si el producto no existe, salir de la función
+    if (!product) return;
+    setCar((prevCar) => {
+        // Buscar si el producto ya está en el carrito
+        const existingProductIndex = prevCar.findIndex(item => item.id === idProduct);
+        if (existingProductIndex !== -1) {
+            // Si el producto ya está en el carrito, actualizar la cantidad y total
+            const updatedCar = [...prevCar];
+            updatedCar[existingProductIndex] = {
+                ...updatedCar[existingProductIndex],
+                quantity: updatedCar[existingProductIndex].quantity + quantity,
+                total: (updatedCar[existingProductIndex].quantity + quantity) * product.price
+            };
+            return updatedCar;
+        } else {
+            // Si el producto no está en el carrito, agregarlo
+            return [
+                ...prevCar,
+                {
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: quantity,
+                    total: product.price * quantity
+                }
+            ];
+        }
+    });
+};
 
   return (
     <View>
